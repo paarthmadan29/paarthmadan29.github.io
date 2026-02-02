@@ -4,9 +4,22 @@
     <meta charset="utf-8" />
     <title>Content Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://unpkg.com/decap-cms@3.10.0/dist/decap-cms.js"></script>
+
+    <!-- IMPORTANT: prevent auto init -->
+    <script>
+      window.CMS_MANUAL_INIT = true;
+    </script>
   </head>
+
   <body>
     <div id="nc-root"></div>
+
+    <!-- Load CMS AFTER body exists -->
+    <script src="https://unpkg.com/decap-cms@3.10.0/dist/decap-cms.js"></script>
+
+    <!-- Manually init -->
+    <script>
+      window.CMS.init();
+    </script>
   </body>
 </html>
