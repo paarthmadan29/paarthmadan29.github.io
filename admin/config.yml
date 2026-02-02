@@ -2,6 +2,7 @@ backend:
   name: github
   repo: paarthmadan29/paarthmadan29.github.io
   branch: main
+  auth_endpoint: https://auth.decapcms.org/auth
 
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
