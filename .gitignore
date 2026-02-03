@@ -1,0 +1,9 @@
+# Hugo build output
+/public/
+
+# OS junk
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
