@@ -2,13 +2,14 @@ backend:
   name: github
   repo: paarthmadan29/paarthmadan29.github.io
   branch: main
+  site_domain: paarthmadan29.github.io
   auth_endpoint: https://auth.decapcms.org/auth
   base_url: https://auth.decapcms.org
   scope: repo
   open_authoring: false
 
-media_folder: "assets/uploads"
-public_folder: "/assets/uploads"
+media_folder: "img"
+public_folder: "/img"
 
 collections:
   - name: "posts"
@@ -18,5 +19,31 @@ collections:
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Publish Date", name: "date", widget: "datetime" }
+      - {
+          label: "Description",
+          name: "description",
+          widget: "text",
+          required: false,
+        }
+      - { label: "Tags", name: "tags", widget: "list", required: false }
+      - {
+          label: "Categories",
+          name: "categories",
+          widget: "list",
+          required: false,
+        }
+      - {
+          label: "Draft",
+          name: "draft",
+          widget: "boolean",
+          required: false,
+          default: false,
+        }
+      - {
+          label: "Featured Image",
+          name: "featured_image",
+          widget: "image",
+          required: false,
+        }
       - { label: "Body", name: "body", widget: "markdown" }

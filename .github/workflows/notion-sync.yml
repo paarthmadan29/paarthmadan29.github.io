@@ -1,0 +1,164 @@
+name: Sync Notion to Hugo Posts
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  sync-notion-posts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install @notionhq/client
+          npm install fs
+          npm install path
+
+      - name: Create sync script
+        run: |
+          cat > notion-sync.mjs << 'EOF'
+          import { Client } from '@notionhq/client';
+          import fs from 'fs';
+          import path from 'path';
+
+          const notion = new Client({
+            auth: process.env.NOTION_TOKEN,
+          });
+
+          const databaseId = process.env.NOTION_DATABASE_ID;
+
+          async function syncNotionToHugo() {
+            try {
+              console.log('Starting Notion to Hugo sync...');
+              
+              // Query the Notion database
+              const response = await notion.databases.query({
+                database_id: databaseId,
+              });
+
+              console.log(`Found ${response.results.length} entries in Notion database`);
+
+              for (const page of response.results) {
+                try {
+                  // Extract page properties
+                  const titleProperty = page.properties.Name?.title?.[0]?.plain_text;
+                  const dateProperty = page.properties.Date?.date?.start;
+                  const contentProperty = page.properties.Content?.rich_text?.[0]?.plain_text;
+                  const statusProperty = page.properties.Status?.select?.name;
+                  
+                  if (!titleProperty) {
+                    console.log(`Skipping page ${page.id} - no title`);
+                    continue;
+                  }
+
+                  // Only process published posts
+                  if (statusProperty && statusProperty.toLowerCase() !== 'published') {
+                    console.log(`Skipping ${titleProperty} - status is ${statusProperty}`);
+                    continue;
+                  }
+
+                  // Create Hugo front matter
+                  const frontMatter = `---
+title: "${titleProperty.replace(/"/g, '\\"')}"
+date: ${dateProperty || new Date().toISOString()}
+draft: false
+---
+
+`;
+
+                  // Create post content
+                  const postContent = frontMatter + (contentProperty || '');
+
+                  // Sanitize title for filename
+                  const sanitizedTitle = titleProperty
+                    .toLowerCase()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .trim('-');
+
+                  // Create post filename
+                  const fileName = `${sanitizedTitle}.md`;
+                  const filePath = path.join('posts', fileName);
+
+                  // Ensure posts directory exists
+                  if (!fs.existsSync('posts')) {
+                    fs.mkdirSync('posts', { recursive: true });
+                  }
+
+                  // Check if file exists and compare content
+                  if (fs.existsSync(filePath)) {
+                    const existingContent = fs.readFileSync(filePath, 'utf8');
+                    if (existingContent === postContent) {
+                      console.log(`Post ${fileName} is up to date`);
+                      continue;
+                    }
+                  }
+
+                  // Write post file
+                  fs.writeFileSync(filePath, postContent);
+                  console.log(`Created/updated post: ${filePath}`);
+
+                  // Also create a directory-based post if needed
+                  const dirName = path.join('posts', sanitizedTitle);
+                  if (!fs.existsSync(dirName)) {
+                    fs.mkdirSync(dirName, { recursive: true });
+                    
+                    // Create index.md inside the directory
+                    const indexPath = path.join(dirName, 'index.md');
+                    fs.writeFileSync(indexPath, postContent);
+                    console.log(`Created directory-based post: ${indexPath}`);
+                  }
+
+                } catch (err) {
+                  console.error(`Error processing page ${page.id}:`, err);
+                }
+              }
+
+              console.log('Sync completed successfully');
+            } catch (error) {
+              console.error('Error during sync:', error);
+              throw error;
+            }
+          }
+
+          syncNotionToHugo();
+          EOF
+
+      - name: Run Notion sync
+        run: node notion-sync.mjs
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+
+      - name: Build site
+        run: hugo
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          if [[ -n $(git status --porcelain) ]]; then
+            git commit -m "Auto-sync: Update posts from Notion"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
