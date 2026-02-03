@@ -4,11 +4,15 @@ This is my personal website built with Hugo and deployed on GitHub Pages.
 
 ## Content Management
 
-This site supports two methods for managing content:
+Content is managed exclusively through Notion integration. Posts created in a connected Notion database are automatically synced to this site every 2 hours.
 
-1. **Web-based UI**: Access the content management system at `/admin/` to create, edit, and delete posts through a web interface.
-2. **Notion Integration**: Posts created in a connected Notion database will be automatically synced to this site.
+### How It Works
 
-For detailed instructions on using either method, see [CONTENT_MANAGEMENT.md](./CONTENT_MANAGEMENT.md).
+1. Create posts in your Notion database
+2. Set the status to "Published"
+3. The GitHub Action automatically syncs new/updated posts
+4. Changes are deployed to your live site
 
-If you encounter issues with the admin panel, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
+For setup instructions, see [NOTION_SETUP.md](./NOTION_SETUP.md).
+
+For current status and usage, see [STATUS.md](./STATUS.md).
