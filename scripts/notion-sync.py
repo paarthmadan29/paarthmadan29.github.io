@@ -14,7 +14,9 @@ from pathlib import Path
 
 NOTION_TOKEN = os.environ.get('NOTION_TOKEN')
 DATABASE_ID = os.environ.get('NOTION_DATABASE_ID')
-OUTPUT_DIR = 'content/posts'
+# OUTPUT_DIR = 'content/posts'
+REPO_ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = REPO_ROOT / 'content' / 'posts'
 # Notion API setup
 NOTION_API = 'https://api.notion.com/v1'
 HEADERS = {
@@ -182,7 +184,8 @@ def create_hugo_post(page_id, properties, content):
     """Create Hugo markdown file with front matter"""
     slug = properties['slug']
     filename = f"{slug}.md"
-    filepath = Path(OUTPUT_DIR) / filename
+    # filepath = Path(OUTPUT_DIR) / filename
+    filepath = OUTPUT_DIR / filename
     # Build front matter
     tags_str = ', '.join([f'"{tag}"' for tag in properties['tags']])
     front_matter = f"""---
@@ -200,6 +203,7 @@ draft: false
         f.write(front_matter)
         f.write(content)
     print(f'✓ Created: {filename}')
+    print("📝 Writing to:", filepath.resolve())
     return filename
 
 
