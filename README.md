@@ -10,3 +10,5 @@ This site supports two methods for managing content:
 2. **Notion Integration**: Posts created in a connected Notion database will be automatically synced to this site.
 
 For detailed instructions on using either method, see [CONTENT_MANAGEMENT.md](./CONTENT_MANAGEMENT.md).
+
+If you encounter issues with the admin panel, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).

@@ -40,14 +40,18 @@
     <div id="nc-root"></div>
 
     <!-- Load CMS AFTER body exists -->
-    <script src="https://unpkg.com/decap-cms@3.10.0/dist/decap-cms.js"></script>
+    <script src="https://unpkg.com/netlify-cms@2.10.198/dist/netlify-cms.js"></script>
 
     <!-- Manually init -->
     <script>
       function showCMS() {
         document.querySelector('.welcome-message').style.display = 'none';
         document.getElementById('nc-root').style.display = 'block';
-        window.CMS.init();
+        if (window.CMS) {
+          window.CMS.init();
+        } else if (window.NetlifyCMS) {
+          window.NetlifyCMS.init();
+        }
       }
     </script>
   </body>
