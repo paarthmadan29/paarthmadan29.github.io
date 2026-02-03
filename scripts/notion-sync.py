@@ -10,11 +10,13 @@ import requests
 from datetime import datetime
 from pathlib import Path
 # Configuration from environment variables
+
+
 NOTION_TOKEN = os.environ.get('NOTION_TOKEN')
 DATABASE_ID = os.environ.get('NOTION_DATABASE_ID')
 OUTPUT_DIR = 'content/posts'
 # Notion API setup
-NOTION_API = '<https://api.notion.com/v1>'
+NOTION_API = 'https://api.notion.com/v1'
 HEADERS = {
     'Authorization': f'Bearer {NOTION_TOKEN}',
     'Notion-Version': '2022-06-28',
@@ -241,3 +243,4 @@ if __name__ == '__main__':
         print('❌ Error: NOTION_DATABASE_ID not set')
         exit(1)
     sync()
+
