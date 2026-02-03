@@ -1,244 +1,47 @@
-name: Notion Content Sync
+name: Sync Notion to Hugo
 
 on:
+  # Run every hour
   schedule:
-    - cron: "0 */2 * * *" # Runs every 2 hours
+    - cron: "0 * * * *"
+  # Allow manual trigger
   workflow_dispatch:
-    inputs:
-      debug_mode:
-        description: "Enable debug output"
-        required: false
-        default: false
-        type: boolean
-
+  # Run when this workflow changes
+  push:
+    paths:
+      - ".github/workflows/notion-sync.yml"
+      - "scripts/notion-sync.py"
 jobs:
-  sync-notion-posts:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
+          submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          node-version: "18"
-
+          python-version: "3.11"
       - name: Install dependencies
         run: |
-          npm install @notionhq/client
-          npm install fs
-          npm install path
-
-      - name: Create enhanced sync script
-        run: |
-          cat > notion-sync.mjs << 'EOF'
-          import { Client } from '@notionhq/client';
-          import fs from 'fs';
-          import path from 'path';
-
-          const notion = new Client({
-            auth: process.env.NOTION_TOKEN,
-          });
-
-          const databaseId = process.env.NOTION_DATABASE_ID;
-          const debugMode = process.env.DEBUG_MODE === 'true';
-
-          function log(message, isError = false) {
-            if (isError || debugMode) {
-              console.log(`[${new Date().toISOString()}] ${message}`);
-            }
-          }
-
-          function sanitizeFilename(title) {
-            return title
-              .toLowerCase()
-              .replace(/[^\w\s-]/g, '')
-              .replace(/\s+/g, '-')
-              .trim('-')
-              .substring(0, 50); // Limit length
-          }
-
-          function createFrontMatter(pageData) {
-            const { title, date, tags = [], categories = [] } = pageData;
-            
-            let frontMatter = '---\n';
-            frontMatter += `title: "${title.replace(/"/g, '\\"')}"\n`;
-            frontMatter += `date: ${date || new Date().toISOString()}\n`;
-            frontMatter += 'draft: false\n';
-            
-            if (tags.length > 0) {
-              frontMatter += `tags: [${tags.map(tag => `"${tag}"`).join(', ')}]\n`;
-            }
-            
-            if (categories.length > 0) {
-              frontMatter += `categories: [${categories.map(cat => `"${cat}"`).join(', ')}]\n`;
-            }
-            
-            frontMatter += '---\n\n';
-            return frontMatter;
-          }
-
-          async function extractPageProperties(page) {
-            const properties = {};
-            
-            // Extract title
-            if (page.properties.Name?.title?.[0]?.plain_text) {
-              properties.title = page.properties.Name.title[0].plain_text;
-            }
-            
-            // Extract date
-            if (page.properties.Date?.date?.start) {
-              properties.date = page.properties.Date.date.start;
-            }
-            
-            // Extract content
-            if (page.properties.Content?.rich_text?.[0]?.plain_text) {
-              properties.content = page.properties.Content.rich_text[0].plain_text;
-            }
-            
-            // Extract status
-            if (page.properties.Status?.select?.name) {
-              properties.status = page.properties.Status.select.name.toLowerCase();
-            }
-            
-            // Extract tags (if multi-select)
-            if (page.properties.Tags?.multi_select) {
-              properties.tags = page.properties.Tags.multi_select.map(tag => tag.name);
-            } else if (page.properties.Tags?.select?.name) {
-              // Handle single select tags
-              properties.tags = [page.properties.Tags.select.name];
-            }
-            
-            // Extract categories
-            if (page.properties.Category?.select?.name) {
-              properties.categories = [page.properties.Category.select.name];
-            }
-            
-            return properties;
-          }
-
-          async function syncNotionToHugo() {
-            try {
-              log('Starting Notion to Hugo sync...', false);
-              
-              // Query the Notion database
-              const response = await notion.databases.query({
-                database_id: databaseId,
-              });
-
-              log(`Found ${response.results.length} entries in Notion database`, false);
-
-              let processedCount = 0;
-              let updatedCount = 0;
-              let skippedCount = 0;
-
-              for (const page of response.results) {
-                try {
-                  const properties = await extractPageProperties(page);
-                  
-                  if (!properties.title) {
-                    log(`Skipping page ${page.id} - no title`, true);
-                    skippedCount++;
-                    continue;
-                  }
-
-                  // Only process published posts
-                  if (properties.status && properties.status !== 'published') {
-                    log(`Skipping ${properties.title} - status is ${properties.status}`, false);
-                    skippedCount++;
-                    continue;
-                  }
-
-                  // Create Hugo front matter
-                  const frontMatter = createFrontMatter(properties);
-                  const postContent = frontMatter + (properties.content || '');
-
-                  // Sanitize title for filename
-                  const sanitizedTitle = sanitizeFilename(properties.title);
-                  const fileName = `${sanitizedTitle}.md`;
-                  const filePath = path.join('posts', fileName);
-
-                  // Ensure posts directory exists
-                  if (!fs.existsSync('posts')) {
-                    fs.mkdirSync('posts', { recursive: true });
-                    log('Created posts directory', false);
-                  }
-
-                  // Check if file exists and compare content
-                  let shouldUpdate = true;
-                  if (fs.existsSync(filePath)) {
-                    const existingContent = fs.readFileSync(filePath, 'utf8');
-                    if (existingContent === postContent) {
-                      log(`Post ${fileName} is up to date`, false);
-                      shouldUpdate = false;
-                      skippedCount++;
-                    }
-                  }
-
-                  if (shouldUpdate) {
-                    // Write post file
-                    fs.writeFileSync(filePath, postContent);
-                    log(`Created/updated post: ${filePath}`, false);
-                    updatedCount++;
-
-                    // Also create a directory-based post
-                    const dirName = path.join('posts', sanitizedTitle);
-                    if (!fs.existsSync(dirName)) {
-                      fs.mkdirSync(dirName, { recursive: true });
-                      
-                      // Create index.md inside the directory
-                      const indexPath = path.join(dirName, 'index.md');
-                      fs.writeFileSync(indexPath, postContent);
-                      log(`Created directory-based post: ${indexPath}`, false);
-                    }
-                  }
-                  
-                  processedCount++;
-
-                } catch (err) {
-                  log(`Error processing page ${page.id}: ${err.message}`, true);
-                  skippedCount++;
-                }
-              }
-
-              log(`Sync completed. Processed: ${processedCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`, false);
-              
-            } catch (error) {
-              log(`Critical error during sync: ${error.message}`, true);
-              throw error;
-            }
-          }
-
-          syncNotionToHugo();
-          EOF
-
+          pip install -r scripts/requirements.txt
       - name: Run Notion sync
-        run: node notion-sync.mjs
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
-          DEBUG_MODE: ${{ github.event.inputs.debug_mode || 'false' }}
-
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: "latest"
-
-      - name: Build site
-        run: hugo
-
-      - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          if [[ -n $(git status --porcelain) ]]; then
-            git commit -m "Auto-sync: Update posts from Notion"
-            git push
-          else
-            echo "No changes to commit"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          python scripts/notion-sync.py
+      - name: Check for changes
+        id: verify_diff
+        run: |
+          git diff --quiet content/posts/ || echo "changed=true" >> $GITHUB_OUTPUT
+      - name: Commit and push if changed
+        if: steps.verify_diff.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add content/posts/
+          git commit -m "🔄 Sync from Notion"
+          git push
