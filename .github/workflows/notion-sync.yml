@@ -3,6 +3,13 @@ name: Sync Notion to Hugo
 on:
   # Run every hour
   schedule:
+    # Default: Every hour at minute 0
+    # To change frequency, update the cron expression:
+    # - Every 30 min: '*/30 * * * *'
+    # - Every 2 hours: '0 */2 * * *'
+    # - Every 6 hours: '0 */6 * * *'
+    # - Daily at midnight: '0 0 * * *'
+    # - Every weekday at 9am: '0 9 * * 1-5'
     - cron: "0 * * * *"
   # Allow manual trigger
   workflow_dispatch:
