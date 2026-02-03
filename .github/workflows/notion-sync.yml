@@ -54,3 +54,5 @@ jobs:
           git add content/posts/
           git commit -m "🔄 Sync from Notion"
           git push
+permissions:
+  contents: write
