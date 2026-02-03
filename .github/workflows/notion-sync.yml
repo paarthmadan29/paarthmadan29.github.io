@@ -26,7 +26,7 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          pip install -r scripts/requirements.txt
+          pip install -r ./requirements.txt
       - name: Run Notion sync
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
