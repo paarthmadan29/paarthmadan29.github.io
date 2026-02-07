@@ -2,6 +2,9 @@ baseURL = "https://paarthmadan29.github.io/"
 title = "Paarth Madan"
 theme = "PaperMod"
 
+[pagination]
+  pagerSize = 10
+
 paginate = 10
 
 [params]
