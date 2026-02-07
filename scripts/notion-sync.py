@@ -66,35 +66,35 @@ def notion_to_markdown(blocks):
         if block_type == 'paragraph':
             text = rich_text_to_markdown(block['paragraph']['rich_text'])
             if text.strip():
-                markdown.append(f'{text}\\n')
+                markdown.append(f'{text}\n')
         # Headings
         elif block_type == 'heading_1':
             text = rich_text_to_markdown(block['heading_1']['rich_text'])
-            markdown.append(f'## {text}\\n')
+            markdown.append(f'## {text}\n')
         elif block_type == 'heading_2':
             text = rich_text_to_markdown(block['heading_2']['rich_text'])
-            markdown.append(f'### {text}\\n')
+            markdown.append(f'### {text}\n')
         elif block_type == 'heading_3':
             text = rich_text_to_markdown(block['heading_3']['rich_text'])
-            markdown.append(f'#### {text}\\n')
+            markdown.append(f'#### {text}\n')
         # Lists
         elif block_type == 'bulleted_list_item':
             text = rich_text_to_markdown(
                 block['bulleted_list_item']['rich_text'])
-            markdown.append(f'- {text}\\n')
+            markdown.append(f'- {text}\n')
         elif block_type == 'numbered_list_item':
             text = rich_text_to_markdown(
                 block['numbered_list_item']['rich_text'])
-            markdown.append(f'1. {text}\\n')
+            markdown.append(f'1. {text}\n')
         # Code blocks
         elif block_type == 'code':
             code = rich_text_to_markdown(block['code']['rich_text'])
             language = block['code']['language']
-            markdown.append(f'```{language}\\n{code}\\n```\\n')
+            markdown.append(f'```{language}\n{code}\n```\n')
         # Quotes
         elif block_type == 'quote':
             text = rich_text_to_markdown(block['quote']['rich_text'])
-            markdown.append(f'> {text}\\n')
+            markdown.append(f'> {text}\n')
         # Images
         elif block_type == 'image':
             url = block['image'].get('file', {}).get('url') or \
@@ -103,11 +103,11 @@ def notion_to_markdown(blocks):
                 caption = rich_text_to_markdown(
                     block['image'].get('caption', []))
                 alt_text = caption if caption else 'Image'
-                markdown.append(f'![{alt_text}]({url})\\n')
+                markdown.append(f'![{alt_text}]({url})\n')
         # Divider
         elif block_type == 'divider':
-            markdown.append('---\\n')
-    return '\\n'.join(markdown)
+            markdown.append('---\n')
+    return '\n'.join(markdown)
 
 
 def rich_text_to_markdown(rich_text):
@@ -209,11 +209,11 @@ draft: false
 
 def sync():
     """Main sync function"""
-    print('🔄 Syncing Notion to Hugo...\\n')
+    print('🔄 Syncing Notion to Hugo...\n')
     # Fetch published posts
     try:
         pages = query_database()
-        print(f'Found {len(pages)} published posts\\n')
+        print(f'Found {len(pages)} published posts\n')
     except Exception as e:
         print(f'❌ Error querying database: {e}')
         return
@@ -232,7 +232,7 @@ def sync():
         except Exception as e:
             print(f'✗ Error processing page: {e}')
             errors += 1
-    print(f'\\n✅ Sync complete!')
+    print(f'\n✅ Sync complete!')
     print(f'   Synced: {synced} posts')
     if errors > 0:
         print(f'   Errors: {errors} posts')
