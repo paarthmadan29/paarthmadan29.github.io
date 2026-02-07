@@ -86,6 +86,9 @@ def notion_to_markdown(blocks):
             text = rich_text_to_markdown(
                 block['numbered_list_item']['rich_text'])
             markdown.append(f'1. {text}\n')
+        elif block_type == "toggle":
+            text = rich_text_to_markdown(block["toggle"]["rich_text"])
+            markdown.append(f"### {text}\n")
         # Code blocks
         elif block_type == 'code':
             code = rich_text_to_markdown(block['code']['rich_text'])
