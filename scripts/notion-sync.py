@@ -204,6 +204,8 @@ draft: false
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(front_matter)
+        f.write(content.split("\n\n", 1)[0])
+        f.write("\n\n<!--more-->\n\n")
         f.write(content)
     print(f'✓ Created: {filename}')
     print("📝 Writing to:", filepath.resolve())

@@ -4,10 +4,6 @@ title = "Paarth Madan"
 subtitle = "Documenting thoughts, experiments, and learnings."
 theme = "PaperMod"
 
-[[params.profileMode.buttons]]
-name = "Posts"
-url = "/"
-
 [pagination]
   pagerSize = 10
 
@@ -20,13 +16,19 @@ paginate = 10
   ShowBreadCrumbs = true
   ShowCodeCopyButtons = true
   ShowSummary = true
+  ShowSocialIcons = true
 
 [menu]
+  [[menu.main]]
+    name = "Posts"
+    url = "/"
+    weight = 1
+
   [[menu.main]]
     name = "Archives"
     url = "/archives/"
     weight = 2
-    
+
   [[menu.main]]
     name = "Tags"
     url = "/tags/"
