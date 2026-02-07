@@ -13,6 +13,7 @@ paginate = 10
   ShowPostNavLinks = true
   ShowBreadCrumbs = true
   ShowCodeCopyButtons = true
+  ShowSummary = true
 
 [menu]
   [[menu.main]]
