@@ -17,6 +17,7 @@ paginate = 10
   ShowCodeCopyButtons = true
   ShowSummary = true
   ShowSocialIcons = true
+  SocialIcons = true
 
 [menu]
   [[menu.main]]
