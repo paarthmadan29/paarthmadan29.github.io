@@ -1,10 +1,28 @@
-baseURL = 'https:paarthmadan29.github.io'
-languageCode = 'en-us'
-title = 'Paarth Madan'
-enableRobotsTXT = true
-summaryLength = 30
+baseURL = "https://paarthmadan29.github.io/"
+title = "Paarth Madan"
+theme = "PaperMod"
 
-[pagination]
-pagerSize = 10
-[outputs]
-home = ["HTML", "RSS", "JSON"]
+paginate = 10
+
+[params]
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+
+[menu]
+  [[menu.main]]
+    name = "Posts"
+    url = "/posts/"
+    weight = 1
+
+  [[menu.main]]
+    name = "Tags"
+    url = "/tags/"
+    weight = 2
+
+  [[menu.main]]
+    name = "Archives"
+    url = "/archives/"
+    weight = 3
