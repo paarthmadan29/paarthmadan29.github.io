@@ -1,16 +1,16 @@
-{{- define "main" }}
+{{ define "main" }}
 
-{{- if .Content }}
-<div class="home-intro">
+{{ if .Content }}
+<section class="home-intro">
   {{ .Content }}
   {{ partial "social_icons.html" .Site.Params }}
-</div>
-{{- end }}
+</section>
+{{ end }}
 
-<div class="posts">
+<section class="posts">
   {{ range .Pages }}
-    {{ partial "post_entry.html" . }}
+    {{ .Render "summary" }}
   {{ end }}
-</div>
+</section>
 
-{{- end }}
+{{ end }}
