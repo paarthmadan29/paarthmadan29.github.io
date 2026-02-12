@@ -15,9 +15,7 @@ paginate = 10
   ShowPostNavLinks = true
   ShowBreadCrumbs = true
   ShowCodeCopyButtons = true
-  ShowSummary = true
-  ShowSocialIcons = true
-  SocialIcons = true
+  customCSS = ["css/custom.css"]
 
 [menu]
   [[menu.main]]

@@ -1,0 +1,16 @@
+{{- define "main" }}
+
+{{- if .Content }}
+<div class="home-intro">
+  {{ .Content }}
+  {{ partial "social_icons.html" . }}
+</div>
+{{- end }}
+
+<div class="posts">
+  {{ range .Pages }}
+    {{ partial "post-entry.html" . }}
+  {{ end }}
+</div>
+
+{{- end }}
