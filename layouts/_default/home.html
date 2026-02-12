@@ -3,7 +3,7 @@
 {{- if .Content }}
 <div class="home-intro">
   {{ .Content }}
-  {{ partial "social_icons.html" . }}
+  {{ partial "social_icons.html" .Site.Params }}
 </div>
 {{- end }}
 
